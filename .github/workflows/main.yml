@@ -1,0 +1,27 @@
+# Sets the name of the workflow as it will appear in the GitHub Actions UI.
+name: Deploy Frontend
+
+# Configures the workflow to run automatically on a push event to the 'main' branch.
+on:
+  push:
+    branches:
+      - main
+
+# Defines the jobs that will run as part of this workflow.
+jobs:
+  # Defines a job with the ID 'build'.
+  build:
+    # Specifies that this job will run on a virtual machine with the latest version of Ubuntu.
+    runs-on: ubuntu-latest
+    # A sequence of tasks that will be executed as part of the 'build' job.
+    steps:
+      # This step checks out your repository under $GITHUB_WORKSPACE, so your job can access it.
+      - uses: actions/checkout@v2
+      # This step logs into Docker Hub using credentials stored as secrets in the repository.
+      - run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      # This step builds a Docker image from the 'Dockerfile.dev' in the current directory.
+      # The '-t' flag tags the image with the name 'cygnetops/react-test'.
+      - run: docker build -t rohansharma029/react-test -f Dockerfile.dev .
+      # This step runs the tests inside a new container from the 'cygnetops/react-test' image.
+      # '-e CI=true' sets the environment variable CI to true, which is often used by test runners to execute in a non-interactive mode.
+      - run: docker run -e CI=true rohansharma029/react-test npm test
